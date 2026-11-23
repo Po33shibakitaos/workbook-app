@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>英検ワークメーカー</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="top">
+  <h1>英検ワークメーカー</h1>
+  <p>条件を選んで、Wordプリント（問題用・解答用）を作ります。</p>
+</header>
+
+<main>
+  <!-- ステップ1 -->
+  <section class="step">
+    <h2><span class="num">1</span>何を学ぶ？</h2>
+
+    <div class="field">
+      <div class="label">ワークの種類</div>
+      <div class="seg">
+        <label><input type="radio" name="mode" value="word" checked><span>単語ワーク</span></label>
+        <label><input type="radio" name="mode" value="grammar"><span>文法ワーク</span></label>
+      </div>
+      <div class="chips small held">
+        <label class="chip off" title="保留中"><input type="checkbox" disabled><span>読解<em>保留</em></span></label>
+        <label class="chip off" title="保留中"><input type="checkbox" disabled><span>ライティング<em>保留</em></span></label>
+        <label class="chip off" title="保留中"><input type="checkbox" disabled><span>イディオム<em>保留</em></span></label>
+      </div>
+    </div>
+
+    <div class="field" id="gradeBox">
+      <div class="label">英検の級</div>
+      <div class="chips" id="grades"><!-- app.js が入れる --></div>
+    </div>
+    <p class="note" id="gradeNote" hidden>文法ワークでは級は選びません。英文の語彙は3級以下（おもに4級以下）です。</p>
+
+    <div class="field" id="grammarBox" hidden>
+      <div class="label">文法 <small>（複数選択可。選ばなければすべての文法から出題）</small></div>
+      <div class="chips small" id="grammarList"><!-- app.js が入れる --></div>
+      <p class="note">ボタンは中学校で習う順（目安）。数字は出題できる文の数です。</p>
+    </div>
+  </section>
+
+  <!-- ステップ2 -->
+  <section class="step">
+    <h2><span class="num">2</span>どう出題する？</h2>
+
+    <!-- 単語ワークの形式 -->
+    <div id="wordForms">
+      <div class="field">
+        <div class="label">形式 <small>（複数選択）</small></div>
+        <div class="chips">
+          <label class="chip"><input type="checkbox" name="form" value="meaning" checked><span>記述式<small>単語の意味</small></span></label>
+          <label class="chip"><input type="checkbox" name="form" value="cloze" checked><span>穴埋め<small>例文</small></span></label>
+        </div>
+      </div>
+      <div class="field" id="dirBox">
+        <div class="label">出題方向 <small>（記述式）</small></div>
+        <div class="seg">
+          <label><input type="radio" name="dir" value="en2ja" checked><span>英 → 日</span></label>
+          <label><input type="radio" name="dir" value="ja2en"><span>日 → 英</span></label>
+          <label><input type="radio" name="dir" value="mix"><span>ランダム</span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- 文法ワークの形式（生徒がやる作業でグループ分け） -->
+    <div id="grammarForms" hidden>
+      <div class="field">
+        <div class="row">
+          <button type="button" id="btnAuto" class="quick">おまかせで選ぶ</button>
+          <span class="note">選んだ文法に合う形式を自動で組み合わせます。</span>
+        </div>
+      </div>
+      <div class="fgroup"><div class="glabel">選ぶ</div><div class="chips" data-group="choose"></div></div>
+      <div class="fgroup"><div class="glabel">埋める</div><div class="chips" data-group="fill"></div></div>
+      <div class="fgroup"><div class="glabel">並べる</div><div class="chips" data-group="order"></div>
+        <div class="seg subopt" id="rtypeBox">
+          <label><input type="radio" name="rtype" value="part" checked><span>文法部分だけ</span></label>
+          <label><input type="radio" name="rtype" value="full"><span>英文全体</span></label>
+        </div>
+      </div>
+      <div class="fgroup"><div class="glabel">書く</div><div class="chips" data-group="write"></div>
+        <div class="seg subopt" id="ttypeBox">
+          <label><input type="radio" name="ttype" value="full" checked><span>和訳：全文</span></label>
+          <label><input type="radio" name="ttype" value="part"><span>和訳：一部だけ</span></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="field" id="hintBox">
+      <div class="label">空所のヒント <small>（穴埋め）</small></div>
+      <div class="seg">
+        <label><input type="radio" name="hint" value="none"><span>なし</span></label>
+        <label><input type="radio" name="hint" value="initial" checked><span>頭文字</span></label>
+        <label><input type="radio" name="hint" value="count"><span>頭文字＋文字数</span></label>
+      </div>
+      <p class="note" id="hintSample"></p>
+    </div>
+  </section>
+
+  <!-- ステップ3 -->
+  <section class="step">
+    <h2><span class="num">3</span>何問つくる？</h2>
+
+    <div class="field">
+      <div class="label">問題数 <small>（形式ごとの問題数）</small></div>
+      <div class="row">
+        <input type="number" id="count" min="1" max="200" value="20" inputmode="numeric">
+        <button type="button" class="quick" data-n="10">10問</button>
+        <button type="button" class="quick" data-n="20">20問</button>
+        <button type="button" class="quick" data-n="50">50問</button>
+      </div>
+      <p class="note" id="avail"></p>
+    </div>
+
+    <div class="field">
+      <div class="label">プリント</div>
+      <label class="check"><input type="checkbox" id="titlePage" checked> 製本用のタイトルページを付ける</label>
+      <label class="check" id="explainBox"><input type="checkbox" id="explain" checked> 解答用に解説を付ける（文法ワーク）</label>
+      <div class="row">
+        <input type="text" id="title" placeholder="タイトル（空欄なら自動）">
+      </div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <div class="btns">
+      <button type="button" id="btnPreview" class="secondary">プレビュー</button>
+      <button type="button" id="btnOut" class="primary">Wordプリントを出力する</button>
+      <button type="button" id="btnPrint" class="secondary">保存せずに印刷</button>
+    </div>
+    <p id="msg" role="status"></p>
+  </div>
+
+  <section id="preview" class="preview" hidden>
+    <div class="pv-bar">
+      <div class="pv-tabs">
+        <button type="button" data-kind="problem" class="on">問題</button>
+        <button type="button" data-kind="answer">解答</button>
+      </div>
+      <span id="pvInfo" class="pv-info"></span>
+      <button type="button" id="btnReroll" class="quick">問題を選び直す</button>
+    </div>
+    <p class="note">「Wordプリントを出力する」を押すと、このプレビューと同じ問題で出力します。改ページの位置はWordと少しずれることがあります。</p>
+    <div id="pvPages" class="pv-pages"></div>
+  </section>
+</main>
+
+<footer class="foot">問題用・解答用の2つのWordファイルがダウンロードされます。</footer>
+
+<script src="data/words.js"></script>
+<script src="data/sentences.js"></script>
+<script src="data/grammar.js"></script>
+<script src="js/docx.js"></script>
+<script src="js/preview.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+/* =========================================================
+   英検ワークメーカー：ノート・文房具風のデザイン
+   外部フォントは使わない（職場PC・USB でも同じ見た目）。見出しは Windows 標準の教科書体。
+   ========================================================= */
+:root {
+  --desk: #efe9dd;          /* 机 */
+  --paper: #fffdf7;         /* ノートの紙 */
+  --rule: #dde6f0;          /* 罫線 */
+  --margin: #f2b8b0;        /* ノートの赤い余白線 */
+  --ink: #2b3550;           /* 万年筆のインク */
+  --pencil: #6f6a62;        /* えんぴつ */
+  --line: #d8d1c4;          /* 枠線 */
+  --accent: #2f5d8c;        /* 青ペン */
+  --red: #c8463d;           /* 赤ペン */
+  --marker: #fff07a;        /* 蛍光ペン */
+  --tape: rgba(140, 190, 175, .55);  /* マスキングテープ */
+  --off: #b9b2a6;
+  --hand: "UD Digi Kyokasho NK-R", "UD デジタル 教科書体 NK-R", "UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", "BIZ UDPGothic", "Meiryo", sans-serif;
+  --body: "BIZ UDPGothic", "Meiryo", "Hiragino Sans", sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.6;
+  background-color: var(--desk);
+  /* 机の上の方眼 */
+  background-image:
+    linear-gradient(rgba(255,255,255,.35) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.35) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.top, main, .foot { max-width: 780px; margin: 0 auto; padding: 0 16px; }
+
+/* ---- タイトル（表紙のラベル＋マスキングテープ） ---- */
+.top { padding-top: 36px; padding-bottom: 6px; text-align: center; }
+.top h1 {
+  position: relative; display: inline-block;
+  margin: 0; padding: 14px 34px 10px;
+  font-family: var(--hand); font-weight: normal; font-size: 30px; letter-spacing: .08em;
+  background: var(--paper); border: 1.5px solid var(--ink); border-radius: 6px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.top h1::before {
+  content: ""; position: absolute; top: -12px; left: 50%;
+  width: 110px; height: 24px; transform: translateX(-50%) rotate(-3deg);
+  background: var(--tape);
+  background-image: repeating-linear-gradient(90deg, rgba(255,255,255,.25) 0 6px, transparent 6px 12px);
+}
+.top p { margin: 14px 0 0; color: var(--pencil); font-size: 15px; }
+
+/* ---- ステップ（罫線入りのノート） ---- */
+.step {
+  position: relative;
+  margin: 26px 0;
+  padding: 22px 22px 8px 54px;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(90deg, transparent 38px, var(--margin) 38px, var(--margin) 40px, transparent 40px),
+    repeating-linear-gradient(transparent 0 31px, var(--rule) 31px 32px);
+  border-radius: 4px 10px 10px 4px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.06), 0 8px 18px -10px rgba(60,45,20,.35);
+}
+/* ノートのとじ穴 */
+.step::before {
+  content: ""; position: absolute; left: 12px; top: 26px; bottom: 26px; width: 12px;
+  background: radial-gradient(circle at 6px 6px, var(--desk) 5px, transparent 6px) 0 0 / 12px 44px repeat-y;
+}
+.step h2 {
+  margin: 0 0 14px; display: flex; align-items: center; gap: 12px;
+  font-family: var(--hand); font-weight: normal; font-size: 23px; letter-spacing: .04em;
+}
+.num {
+  display: inline-grid; place-items: center;
+  width: 34px; height: 34px; border-radius: 50%;
+  font-family: var(--hand); font-size: 18px; color: var(--red);
+  border: 2px solid var(--red); transform: rotate(-8deg);
+  background: rgba(255,255,255,.7);
+}
+.field { margin-bottom: 18px; }
+.label { font-family: var(--hand); font-size: 17px; margin-bottom: 6px; }
+.label small, .chip small { font-family: var(--body); font-weight: normal; color: var(--pencil); font-size: 12px; }
+.note { margin: 6px 0 0; font-size: 14px; color: var(--pencil); }
+
+/* ---- 選択チップ（選ぶと蛍光ペン） ---- */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { position: relative; cursor: pointer; }
+.chip input { position: absolute; opacity: 0; pointer-events: none; }
+.chip span {
+  display: inline-flex; align-items: baseline; gap: 6px;
+  padding: 6px 14px; background: #fff;
+  border: 1.5px solid var(--line); border-radius: 4px;
+  transition: transform .12s, box-shadow .12s, background .12s;
+  user-select: none;
+}
+.chip:hover span { border-color: var(--pencil); }
+.chip input:checked + span {
+  border-color: var(--ink); color: var(--ink); font-weight: bold;
+  background: linear-gradient(transparent 45%, var(--marker) 45%, var(--marker) 88%, transparent 88%), #fff;
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: translate(-1px, -1px);
+}
+.chip input:focus-visible + span { outline: 2px dashed var(--accent); outline-offset: 2px; }
+.chip.off { cursor: not-allowed; }
+.chip.off span { color: var(--off); border-style: dashed; background: transparent; }
+.chip em { font-style: normal; font-size: 12px; }
+.chip em.gcount { margin-left: 2px; color: var(--pencil); font-weight: normal; }
+.chips.small .chip span { padding: 4px 10px; font-size: 14px; }
+.held { margin-top: 10px; }
+.sub { margin-top: 10px; padding: 10px 12px; border-left: 3px solid var(--marker); background: rgba(255,255,255,.6); }
+.sub .note { margin: 0 0 8px; }
+
+/* ---- 切り替えボタン（インデックスタブ風） ---- */
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.seg label { position: relative; cursor: pointer; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg span {
+  display: block; padding: 6px 16px;
+  background: #fff; border: 1.5px solid var(--line); border-radius: 10px 10px 2px 2px;
+  border-bottom-width: 3px;
+}
+.seg label:hover span { border-color: var(--pencil); }
+.seg input:checked + span {
+  background: var(--accent); border-color: var(--accent); color: #fff; font-weight: bold;
+  border-bottom-color: #1d3f63;
+}
+.seg input:focus-visible + span { outline: 2px dashed var(--accent); outline-offset: 2px; }
+.field.disabled, .seg.disabled, #gradeBox.disabled { opacity: .4; pointer-events: none; filter: grayscale(.6); }
+
+/* ---- 文法ワークの形式グループ ---- */
+.fgroup { display: grid; grid-template-columns: 70px 1fr; gap: 6px 10px; align-items: start; margin-bottom: 14px; }
+.fgroup .glabel {
+  padding-top: 6px; font-family: var(--hand); font-size: 17px; color: var(--accent);
+  border-right: 2px dotted var(--line); margin-right: 4px;
+}
+.fgroup .subopt { grid-column: 2; justify-self: start; font-size: 14px; }
+.fgroup .subopt span { padding: 3px 12px; }
+
+/* ---- 入力欄 ---- */
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 4px; }
+input[type=number], input[type=text] {
+  font: inherit; padding: 6px 4px; color: var(--ink);
+  border: none; border-bottom: 2px solid var(--ink); border-radius: 0;
+  background: transparent;
+}
+input[type=number]:focus, input[type=text]:focus { outline: none; border-bottom-color: var(--red); }
+input[type=number] { width: 80px; text-align: center; font-family: var(--hand); font-size: 20px; }
+input[type=text] { width: 100%; max-width: 420px; }
+.quick {
+  font: inherit; padding: 6px 14px; cursor: pointer; color: var(--ink);
+  background: #fff; border: 1.5px solid var(--ink); border-radius: 999px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.quick:hover { background: var(--marker); }
+.quick:active { transform: translate(2px, 2px); box-shadow: none; }
+.check { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 6px; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+/* ---- 出力ボタン（スタンプ風） ---- */
+.actions { text-align: center; margin: 30px 0 10px; }
+.btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+.primary, .secondary {
+  font-family: var(--hand); font-size: 20px; letter-spacing: .06em; cursor: pointer;
+  padding: 13px 34px; border-radius: 8px; transition: transform .1s, box-shadow .1s;
+}
+.primary {
+  color: #fff; background: var(--red); border: 2px solid var(--red);
+  box-shadow: inset 0 0 0 3px var(--red), inset 0 0 0 5px rgba(255,255,255,.75), 4px 4px 0 #7d2a24;
+}
+.primary:hover { filter: brightness(1.06); }
+.primary:active { transform: translate(3px, 3px); box-shadow: inset 0 0 0 3px var(--red), inset 0 0 0 5px rgba(255,255,255,.75), 1px 1px 0 #7d2a24; }
+.primary:disabled { background: var(--off); border-color: var(--off); box-shadow: none; cursor: not-allowed; }
+.secondary {
+  color: var(--ink); background: var(--paper); border: 2px dashed var(--ink);
+  box-shadow: 4px 4px 0 rgba(43,53,80,.25);
+}
+.secondary:hover { background: #fff; border-style: solid; }
+.secondary:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 rgba(43,53,80,.25); }
+#msg { min-height: 1.6em; margin: 12px 0 0; font-size: 15px; }
+#msg.err { color: var(--red); font-weight: bold; }
+
+/* ---- プレビュー（机の上に紙を並べる） ---- */
+.preview { margin: 10px 0 28px; }
+.pv-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.pv-tabs { display: inline-flex; gap: 4px; }
+.pv-tabs button {
+  font-family: var(--hand); font-size: 16px; padding: 6px 20px; cursor: pointer; color: var(--ink);
+  background: #fff; border: 1.5px solid var(--line); border-radius: 10px 10px 2px 2px; border-bottom-width: 3px;
+}
+.pv-tabs button.on { background: var(--accent); border-color: var(--accent); color: #fff; border-bottom-color: #1d3f63; }
+.pv-info { color: var(--pencil); font-size: 14px; flex: 1; }
+.pv-pages {
+  margin-top: 8px; padding: 18px; max-height: 80vh; overflow: auto;
+  background: #d9d1c2; border-radius: 6px;
+  box-shadow: inset 0 2px 8px rgba(60,45,20,.25);
+}
+/* 以下の .pv-* は Word の紙面の再現なので、ノート風にしない */
+.pv-page {
+  position: relative; box-sizing: border-box;
+  width: 210mm; height: 297mm; padding: 20mm; margin: 0 auto 14px;
+  background: #fff; color: #000; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  font-family: "HG丸ｺﾞｼｯｸM-PRO", "HGMaruGothicMPRO", "BIZ UDPGothic", "Meiryo", sans-serif;
+  font-size: 13pt; line-height: 1.25;
+}
+.pv-page:last-child { margin-bottom: 0; }
+.pv-body { height: 100%; overflow: hidden; }
+.pv-p { white-space: pre-wrap; word-wrap: break-word; }
+.pv-p.tabbed { display: flex; align-items: baseline; }
+.pv-box { display: inline-flex; align-items: baseline; flex: none; }
+.pv-seg { flex: none; }
+.pv-last { flex: 1 1 0; min-width: 0; }
+.pv-gap { flex: 1; }
+.pv-lead { flex: 1; align-self: stretch; margin: 0 4pt 0.35em; }
+.pv-lead.line { border-bottom: 1px solid #000; }
+.pv-lead.dot { border-bottom: 2px dotted #666; }
+.pv-foot { position: absolute; left: 0; right: 0; bottom: 10mm; text-align: center; font-size: 10pt; }
+
+.foot { color: var(--pencil); font-size: 13px; padding-bottom: 36px; text-align: center; }
+
+@media (max-width: 560px) {
+  .top h1 { font-size: 24px; padding: 12px 20px 8px; }
+  .step { padding: 18px 14px 6px 40px; background-image:
+    linear-gradient(90deg, transparent 28px, var(--margin) 28px, var(--margin) 30px, transparent 30px),
+    repeating-linear-gradient(transparent 0 31px, var(--rule) 31px 32px); }
+  .step::before { left: 6px; }
+  .seg span { padding: 6px 12px; }
+  .fgroup { grid-template-columns: 1fr; }
+  .fgroup .glabel { border-right: none; padding-top: 0; }
+  .fgroup .subopt { grid-column: 1; }
+  .pv-info { order: 3; flex-basis: 100%; }
+  .primary, .secondary { width: 100%; }
+}
