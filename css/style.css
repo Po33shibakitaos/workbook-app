@@ -233,3 +233,27 @@ input[type=text] { width: 100%; max-width: 420px; }
   .pv-info { order: 3; flex-basis: 100%; }
   .primary, .secondary { width: 100%; }
 }
+
+/* ---- 2026-11-24 画面の整理：文法の検索・級タブ・助動詞の種類・形式のたたみ ---- */
+[hidden] { display: none !important; }
+.gfind { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 10px; }
+#gSearch {
+  flex: 1 1 220px; max-width: 320px; padding: 7px 12px; font: inherit; font-size: 15px;
+  border: 1.5px solid var(--line); border-radius: 4px; background: #fff; color: var(--ink);
+}
+#gSearch:focus { outline: none; border-color: var(--accent); }
+.gtabs span { padding: 5px 14px; font-size: 14px; }
+.gtabs.dim { opacity: .45; }
+#grammarList[data-empty]:not([data-empty=""])::after { content: attr(data-empty); color: var(--pencil); font-size: 14px; }
+.subrow {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px;
+  margin: 10px 0 0 14px; padding: 8px 0 2px 12px; border-left: 3px solid var(--marker);
+}
+.subrow .sublabel { font-size: 13px; color: var(--pencil); }
+#gSelected { min-height: 1em; }
+#formDetails { margin-top: 4px; }
+#formDetails > summary {
+  cursor: pointer; display: inline-block; margin-bottom: 12px;
+  font-size: 14px; color: var(--accent); text-decoration: underline dotted;
+}
+#formDetails[open] > summary { color: var(--pencil); }

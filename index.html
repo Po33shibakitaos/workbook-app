@@ -24,23 +24,25 @@
         <label><input type="radio" name="mode" value="word" checked><span>単語ワーク</span></label>
         <label><input type="radio" name="mode" value="grammar"><span>文法ワーク</span></label>
       </div>
-      <div class="chips small held">
-        <label class="chip off" title="保留中"><input type="checkbox" disabled><span>読解<em>保留</em></span></label>
-        <label class="chip off" title="保留中"><input type="checkbox" disabled><span>ライティング<em>保留</em></span></label>
-        <label class="chip off" title="保留中"><input type="checkbox" disabled><span>イディオム<em>保留</em></span></label>
-      </div>
+      <!-- 読解・ライティング・イディオムは保留中。使えるようになるまで出さない（2026-11-24） -->
     </div>
 
     <div class="field" id="gradeBox">
       <div class="label">英検の級</div>
       <div class="chips" id="grades"><!-- app.js が入れる --></div>
     </div>
-    <p class="note" id="gradeNote" hidden>文法ワークでは級は選びません。英文の語彙は3級以下（おもに4級以下）です。</p>
-
     <div class="field" id="grammarBox" hidden>
       <div class="label">文法 <small>（複数選択可。選ばなければすべての文法から出題）</small></div>
+      <div class="gfind">
+        <input type="search" id="gSearch" placeholder="文法をさがす（例：can、受け身、完了）" autocomplete="off">
+        <div class="seg gtabs" id="gTabs"><!-- app.js が入れる --></div>
+      </div>
       <div class="chips small" id="grammarList"><!-- app.js が入れる --></div>
-      <p class="note">ボタンは中学校で習う順（目安）。数字は出題できる文の数です。</p>
+      <div class="subrow" id="modalBox" hidden>
+        <span class="sublabel">助動詞の種類</span>
+        <div class="chips small" id="modalList"><!-- app.js が入れる --></div>
+      </div>
+      <p class="note" id="gSelected"></p>
     </div>
   </section>
 
@@ -72,9 +74,11 @@
       <div class="field">
         <div class="row">
           <button type="button" id="btnAuto" class="quick">おまかせで選ぶ</button>
-          <span class="note">選んだ文法に合う形式を自動で組み合わせます。</span>
+          <span class="note" id="formSummary"></span>
         </div>
       </div>
+      <details id="formDetails">
+      <summary>形式を自分で選ぶ</summary>
       <div class="fgroup"><div class="glabel">選ぶ</div><div class="chips" data-group="choose"></div></div>
       <div class="fgroup"><div class="glabel">埋める</div><div class="chips" data-group="fill"></div></div>
       <div class="fgroup"><div class="glabel">並べる</div><div class="chips" data-group="order"></div>
@@ -89,6 +93,7 @@
           <label><input type="radio" name="ttype" value="part"><span>和訳：一部だけ</span></label>
         </div>
       </div>
+      </details>
     </div>
 
     <div class="field" id="hintBox">

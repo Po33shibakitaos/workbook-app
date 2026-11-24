@@ -18,6 +18,38 @@
   const GRAMMAR_ORDER = ['be動詞', '一般動詞', '否定文', '疑問文', '三単現', '命令文', '前置詞', '現在進行形', '助動詞', '過去形',
     '過去進行形', '未来表現', 'There is構文', '接続詞', '不定詞', '動名詞', '比較', '最上級', '受動態', '5文型',
     '感嘆文', '現在完了形', '分詞', '関係代名詞', '間接疑問文', '付加疑問文', '分詞構文', '間接話法', '倒置・強調構文', 'その他'];
+  // 文法ボタンを探すための英検の級タブ（データの level の多数決。タブは探すためだけで、問題の級は絞らない。2026-11-24）
+  const GRAMMAR_TABS = [
+    { k: '5級', g: ['be動詞', '一般動詞', '否定文', '疑問文', '三単現', '命令文', '前置詞', '現在進行形', '過去形'] },
+    { k: '4級', g: ['助動詞', '過去進行形', '未来表現', 'There is構文', '接続詞', '不定詞', '動名詞', '比較', '最上級'] },
+    { k: '3級', g: ['受動態', '5文型', '感嘆文', '現在完了形', '分詞', '関係代名詞', '間接疑問文'] },
+    { k: '準2級〜', g: ['付加疑問文', '分詞構文', '間接話法', '倒置・強調構文'] },
+    { k: 'その他', g: ['その他'] }
+  ];
+  // 検索用の別名（文法名のほかに、これらの言葉でも見つかる）
+  const GRAMMAR_ALIAS = {
+    'be動詞': 'am is are be', '一般動詞': 'like play have 動詞', '否定文': 'not don\'t doesn\'t 否定 ない', '疑問文': 'do does what where who when how 疑問 か',
+    '三単現': '三人称 3人称 単数 s es', '命令文': '命令 please let\'s don\'t なさい しよう', '前置詞': 'in on at to for with from 前置詞',
+    '現在進行形': 'ing 進行 している', '助動詞': 'can could must may might should will would shall have to had better できる しなければ ならない かもしれない べき してもよい',
+    '過去形': 'ed did was were 過去 した', '過去進行形': 'was were ing 進行 していた', '未来表現': 'will be going to 未来 つもり だろう',
+    'There is構文': 'there is are ある いる', '接続詞': 'and but or so because when if that 接続', '不定詞': 'to 不定詞 ために こと',
+    '動名詞': 'ing 動名詞 こと', '比較': 'er than as more 比較 より 同じくらい', '最上級': 'est most 最上級 いちばん 一番',
+    '受動態': 'be 過去分詞 by 受け身 受身 される', '5文型': 'svo svoc 文型', '感嘆文': 'what how 感嘆 なんて',
+    '現在完了形': 'have has been ever never since for already yet just 完了 経験 継続 したことがある', '分詞': 'ing ed 分詞 している された',
+    '関係代名詞': 'who which that whose 関係', '間接疑問文': '間接疑問 か知っている', '付加疑問文': 'isn\'t don\'t 付加 ですね',
+    '分詞構文': '分詞構文', '間接話法': 'said told 話法', '倒置・強調構文': 'it is that 倒置 強調', 'その他': '語彙 熟語 その他'
+  };
+  // 助動詞の種類（英文の中の語で自動で分ける。2026-11-24 ユーザー了承）
+  const MODALS = [
+    { k: 'can', label: 'can', re: /\b(can|can't|cannot|could|couldn't|able to)\b/i },
+    { k: 'must', label: 'must・have to', re: /\b(must|mustn't|have to|has to|had to)\b/i },
+    { k: 'should', label: 'should', re: /\b(should|shouldn't|had better|ought to)\b/i },
+    { k: 'will', label: 'will・would', re: /\b(will|won't|would|wouldn't|shall)\b/i },
+    { k: 'may', label: 'may', re: /\b(may|might)\b/i }
+  ];
+  function modalOk(it, modals) {
+    return !modals.length || MODALS.some(function (m) { return has(modals, m.k) && m.re.test(it.en); });
+  }
   // 文法ワークの形式（g はグループ）
   const GFORMS = [
     { v: 'choice', g: 'choose', label: '4択', title: '4択', guide: '日本語の意味に合うように、（　）に入る最も適切なものを選びなさい。' },
@@ -67,6 +99,7 @@
   const GPOOL = [];
   GITEMS.forEach(function (x, i) {
     const it = Object.assign({ src: 'g', _i: i, tags: [x.tag] }, x);
+    it.jaAns = x.ja_lit || x.ja; // 解説に合わせた訳（解答・和文英訳の問題文・和訳の一部に使う）
     it.blankAt = x.blank ? findWord(x.en, x.blank) : -1;
     if (x.blank && it.blankAt < 0) it.blankAt = x.en.indexOf(x.blank);
     GPOOL.push(it);
@@ -77,7 +110,7 @@
     const ok = ans && typeof x.blank_at === 'number' && x.en.substr(x.blank_at, ans.length) === ans;
     GPOOL.push({
       src: 's', _i: 100000 + i, id: x.id, tag: x.grammar_main, tags: [x.grammar_main].concat(x.grammar_sub || []),
-      en: x.en, ja: x.ja, blank: ok ? ans : '', blankAt: ok ? x.blank_at : -1, choices: x.distractors || []
+      en: x.en, ja: x.ja, jaAns: x.ja_lit || x.ja, blank: ok ? ans : '', blankAt: ok ? x.blank_at : -1, choices: x.distractors || []
     });
   });
 
@@ -117,31 +150,71 @@
     return false;
   }
   // 文法の絞り込み。短文は、穴埋め・4択なら空所の文法、ほかの形式なら文中の文法でも見る。
-  function grammarMatch(it, f, sel) {
+  function grammarMatch(it, f, sel, modals) {
     const mainOnly = (f !== 'reorder'); // 文中の文法で選ぶのは英文全体の並べ替えだけ
-    if (it.src === 'g') return !sel.length || has(sel, it.tag);
+    // 選んだ文法に当たるか。助動詞は種類を選んでいれば、その助動詞を含む英文だけ。
+    const hit = function (t) { return has(sel, t) && (t !== '助動詞' || modalOk(it, modals)); };
+    if (it.src === 'g') return !sel.length || hit(it.tag);
     if ((f === 'trans' || f === 'compose') && (/(^|\s)[A-Z]:\s|—/.test(it.en) || /[.?!]\s+\S/.test(it.en))) return false; // 会話文・2文以上は和訳・英訳に使わない
     const tags = mainOnly ? [it.tag] : it.tags;
     if (!sel.length) return tags.some(function (t) { return t && t !== 'その他'; });
-    return tags.some(function (t) { return has(sel, t); });
+    return tags.some(hit);
   }
   function poolFor(f, s) {
     const sel = s.grammars || [];
-    return GPOOL.filter(function (it) { return grammarMatch(it, f, sel) && usable(it, f, s); });
+    const modals = has(sel, '助動詞') ? (s.modals || []) : [];
+    return GPOOL.filter(function (it) { return grammarMatch(it, f, sel, modals) && usable(it, f, s); });
   }
 
   // ---------- 画面の準備 ----------
   $('#grades').innerHTML = GRADES.map(function (g, i) {
     return '<label class="chip"><input type="radio" name="grade" value="' + g + '"' + (i === 0 ? ' checked' : '') + '><span>' + g + '</span></label>';
   }).join('');
+  const tabOf = {};
+  GRAMMAR_TABS.forEach(function (t) { t.g.forEach(function (g) { tabOf[g] = t.k; }); });
+  $('#gTabs').innerHTML = GRAMMAR_TABS.map(function (t, i) {
+    return '<label><input type="radio" name="gtab" value="' + t.k + '"' + (i === 0 ? ' checked' : '') + '><span>' + t.k + '</span></label>';
+  }).join('');
   $('#grammarList').innerHTML = GRAMMAR_ORDER.map(function (g) {
     const label = g === 'その他' ? 'その他（語彙・熟語）' : g;
-    return '<label class="chip"><input type="checkbox" name="grammar" value="' + g + '"><span>' + label + '<em class="gcount"></em></span></label>';
+    return '<label class="chip" data-tab="' + (tabOf[g] || 'その他') + '"><input type="checkbox" name="grammar" value="' + g + '"><span>' + label + '<em class="gcount"></em></span></label>';
   }).join('');
+  $('#modalList').innerHTML = MODALS.map(function (m) {
+    return '<label class="chip"><input type="checkbox" name="modal" value="' + m.k + '"><span>' + m.label + '<em class="gcount"></em></span></label>';
+  }).join('');
+  // 検索：文字・別名で文法ボタンを探す（入力中はタブに関係なく、当たったものだけ出す）
+  function normQ(q) { return q.toLowerCase().replace(/[～〜~\s　]/g, ''); }
+  function grammarHit(g, q) {
+    if (!q) return true;
+    if (normQ(g).indexOf(q) >= 0) return true;
+    return (GRAMMAR_ALIAS[g] || '').toLowerCase().split(' ').some(function (a) { return a && (a.indexOf(q) >= 0 || (q.length >= 3 && q.indexOf(a) >= 0 && a.length >= 2)); });
+  }
+  function showGrammarChips() {
+    const q = normQ($('#gSearch').value);
+    const tabEl = document.querySelector('input[name="gtab"]:checked');
+    const tab = tabEl ? tabEl.value : GRAMMAR_TABS[0].k;
+    let n = 0;
+    $$('#grammarList .chip').forEach(function (c) {
+      const g = c.querySelector('input').value;
+      const show = q ? grammarHit(g, q) : c.dataset.tab === tab;
+      c.hidden = !show; if (show) n++;
+    });
+    $('#gTabs').classList.toggle('dim', !!q);
+    $('#grammarList').dataset.empty = n ? '' : (q ? '見つかりませんでした' : '');
+  }
+  $('#gSearch').addEventListener('input', showGrammarChips);
   GFORMS.forEach(function (f) {
     const box = document.querySelector('#grammarForms .chips[data-group="' + f.g + '"]');
     box.insertAdjacentHTML('beforeend', '<label class="chip"><input type="checkbox" name="gform" value="' + f.v + '"><span>' + f.label + '<em class="gcount"></em></span></label>');
   });
+
+  // 選んだ文法の表示（助動詞は種類も）例：助動詞（can・may）・過去形
+  function grammarLabel(s) {
+    return (s.grammars || []).map(function (g) {
+      if (g !== '助動詞' || !(s.modals || []).length) return g;
+      return g + '（' + MODALS.filter(function (m) { return has(s.modals, m.k); }).map(function (m) { return m.label; }).join('・') + '）';
+    }).join('・');
+  }
 
   function readSettings() {
     const v = function (name) { const el = document.querySelector('input[name="' + name + '"]:checked'); return el ? el.value : null; };
@@ -150,6 +223,8 @@
       mode: v('mode'),
       grade: v('grade'),
       grammars: vs('grammar'),
+      modals: vs('modal'),
+      gtab: v('gtab'),
       forms: vs('form'),
       gforms: vs('gform'),
       rtype: v('rtype'),
@@ -169,7 +244,7 @@
     const setRadio = function (name, val) { const el = document.querySelector('input[name="' + name + '"][value="' + val + '"]'); if (el) el.checked = true; };
     const setChecks = function (name, vals) { if (!Array.isArray(vals)) return; $$('input[name="' + name + '"]').forEach(function (e) { if (!e.disabled) e.checked = vals.indexOf(e.value) >= 0; }); };
     setRadio('mode', s.mode); setRadio('grade', s.grade); setChecks('form', s.forms);
-    setChecks('grammar', s.grammars); setChecks('gform', s.gforms);
+    setChecks('grammar', s.grammars); setChecks('modal', s.modals); setRadio('gtab', s.gtab); setChecks('gform', s.gforms);
     setRadio('rtype', s.rtype); setRadio('ttype', s.ttype);
     setRadio('dir', s.dir); setRadio('hint', s.hint); setRadio('order', s.order);
     if (s.count) $('#count').value = s.count;
@@ -182,6 +257,13 @@
     const s = readSettings();
     $$('input[name="grammar"]').forEach(function (el) {
       const n = GPOOL.filter(function (it) { return it.tag === el.value; }).length; // 新しい文法問題＋空所の文法が一致する短文
+      el.disabled = n === 0; if (n === 0) el.checked = false;
+      el.parentNode.classList.toggle('off', n === 0);
+      el.parentNode.querySelector('.gcount').textContent = String(n);
+    });
+    $$('input[name="modal"]').forEach(function (el) {
+      const m = MODALS.filter(function (x) { return x.k === el.value; })[0];
+      const n = GPOOL.filter(function (it) { return it.tag === '助動詞' && m.re.test(it.en); }).length;
       el.disabled = n === 0; if (n === 0) el.checked = false;
       el.parentNode.classList.toggle('off', n === 0);
       el.parentNode.querySelector('.gcount').textContent = String(n);
@@ -225,17 +307,22 @@
   function refresh() {
     const s = updateChips();
     const g = s.mode === 'grammar';
-    $('#gradeBox').classList.toggle('disabled', g);
-    $('#gradeNote').hidden = !g;
+    // 使えないもの・関係ないものは、うすくせずに出さない（2026-11-24 画面の整理）
+    $('#gradeBox').hidden = g;
     $('#grammarBox').hidden = !g;
     $('#wordForms').hidden = g;
     $('#grammarForms').hidden = !g;
     $('#explainBox').hidden = !g;
-    $('#dirBox').classList.toggle('disabled', !has(s.forms, 'meaning'));
+    $('#dirBox').hidden = !has(s.forms, 'meaning');
     const clozeOn = g ? has(s.gforms, 'cloze') : has(s.forms, 'cloze');
-    $('#hintBox').classList.toggle('disabled', !clozeOn);
-    $('#rtypeBox').classList.toggle('disabled', !has(s.gforms, 'reorder'));
-    $('#ttypeBox').classList.toggle('disabled', !has(s.gforms, 'trans'));
+    $('#hintBox').hidden = !clozeOn;
+    $('#rtypeBox').hidden = !has(s.gforms, 'reorder');
+    $('#ttypeBox').hidden = !has(s.gforms, 'trans');
+    $('#modalBox').hidden = !has(s.grammars, '助動詞');
+    showGrammarChips();
+    $('#gSelected').textContent = s.grammars.length ? '選択中：' + grammarLabel(s) : '';
+    const fl = GFORMS.filter(function (f) { return has(s.gforms, f.v); }).map(function (f) { return f.label; });
+    $('#formSummary').textContent = fl.length ? '今の形式：' + fl.join('・') : '形式がまだ選ばれていません。';
     const hs = { none: 'She finally (　　　　　　) her dream.', initial: 'She finally (a________) her dream.', count: 'She finally a _ _ _ _ _ _ _ her dream.' };
     $('#hintSample').textContent = '例：' + hs[s.hint];
 
@@ -243,7 +330,7 @@
     if (g) {
       const p = planGrammar(s);
       const parts = GFORMS.filter(function (f) { return p[f.v]; }).map(function (f) { return f.label + ' ' + p[f.v] + '問'; });
-      lines.push('文法：' + (s.grammars.length ? s.grammars.join('・') : 'すべて'));
+      lines.push('文法：' + (s.grammars.length ? grammarLabel(s) : 'すべて'));
       lines.push('→ ' + (parts.join('＋') || '形式を選んでください'));
     } else {
       const p = planWord(s);
@@ -289,13 +376,18 @@
     return shuffle(list);
   }
 
+  // 空所のかっこ：答えの長さに合わせて広げる（2026-11-24「かっこが小さすぎる」）
+  // 英語：全角スペース1つ ≒ 英字2文字。日本語：答えの文字数＋2。
+  // 英語は3つ刻みにして、幅から答えの長さが分かりにくいようにする
+  function enBox(answer) { return '(' + '　'.repeat(Math.max(6, Math.ceil((Math.ceil((answer || '').length / 2) + 2) / 3) * 3)) + ')'; }
+  function jaBox(answer) { return '（' + '　'.repeat(Math.max(5, (answer || '').length + 2)) + '）'; }
   function blankText(answer, hint) {
-    if (hint === 'none') return '(　　　　　　)';
+    if (hint === 'none') return enBox(answer);
     if (hint === 'count') {
       // 改行しない空白（ ）でつなぎ、空所が行の途中で切れないようにする
       return answer.split('').map(function (c, i) { return i === 0 || !/[A-Za-z]/.test(c) ? c : '_'; }).join(' ');
     }
-    return '(' + answer.charAt(0) + '________)';
+    return '(' + answer.charAt(0) + '_'.repeat(Math.max(8, answer.length + 3)) + ')';
   }
 
   function makeWordSet(s) {
@@ -365,8 +457,8 @@
           }
         }
         if (f.v === 'trans' && s.ttype === 'part') {
-          const k = it.ja.indexOf(it.ja_blank);
-          q.jpre = it.ja.slice(0, k); q.jpost = it.ja.slice(k + it.ja_blank.length);
+          const k = it.jaAns.indexOf(it.ja_blank);
+          q.jpre = it.jaAns.slice(0, k); q.jpost = it.jaAns.slice(k + it.ja_blank.length);
         }
         return q;
       });
@@ -397,7 +489,7 @@
     if (s.title) return s.title;
     if (s.mode === 'grammar') {
       const g = s.grammars || [];
-      return '文法ワーク' + (g.length && g.length <= 3 ? '（' + g.join('・') + '）' : '');
+      return '文法ワーク' + (g.length && g.length <= 3 ? '（' + grammarLabel(s) + '）' : '');
     }
     return '英検' + s.grade + ' 単語ワーク';
   }
@@ -410,7 +502,7 @@
     const contents = [];
     if (set.mode === 'grammar') {
       set.sections.forEach(function (sec) { contents.push(formOf(sec.f).label + ' ' + sec.items.length + '問'); });
-      if (s.grammars && s.grammars.length) contents.push('文法：' + s.grammars.join('・'));
+      if (s.grammars && s.grammars.length) contents.push('文法：' + grammarLabel(s));
     } else {
       if (set.meaning.length) contents.push('単語の意味（' + DIR_LABEL[s.dir] + '）' + set.meaning.length + '問');
       if (set.cloze.length) contents.push('単語の穴埋め ' + set.cloze.length + '問');
@@ -498,7 +590,8 @@
             if (isAnswer) {
               line(clozeRuns(q).concat([{ t: '　… ' + CIRCLED[q.correct], b: true }]));
             } else {
-              line([{ t: q.before + '(　　　　)' + q.after }], { after: 40, keepNext: true });
+              // 幅は選択肢でいちばん長い語に合わせる（答えの長さでヒントにならないように）
+              line([{ t: q.before + enBox(q.options.reduce(function (a, o) { return o.length > a.length ? o : a; }, '')) + q.after }], { after: 40, keepNext: true });
               line([{ t: q.options.map(function (o, k) { return CIRCLED[k] + ' ' + o; }).join('　　') }]);
             }
             break;
@@ -518,12 +611,12 @@
             break;
           case 'trans':
             numLine(i, [{ t: it.en }]);
-            if (sc.ttype === 'part') line(isAnswer ? [{ t: q.jpre }, { t: it.ja_blank, b: true, u: true }, { t: q.jpost }] : [{ t: q.jpre + '（　　　　　　　　）' + q.jpost }]);
-            else if (isAnswer) line([{ t: it.ja, b: true }]);
+            if (sc.ttype === 'part') line(isAnswer ? [{ t: q.jpre }, { t: it.ja_blank, b: true, u: true }, { t: q.jpost }] : [{ t: q.jpre + jaBox(it.ja_blank) + q.jpost }]);
+            else if (isAnswer) line([{ t: it.jaAns, b: true }]);
             else writeSpace(2);
             break;
           case 'compose':
-            numLine(i, [{ t: it.ja }]);
+            numLine(i, [{ t: it.jaAns }]); // 問題文は解説に合わせた訳（2026-11-24 ユーザー指示）
             if (isAnswer) line([{ t: it.en, b: true }]); else writeSpace(2);
             break;
           case 'rewrite':
